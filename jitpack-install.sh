@@ -56,8 +56,10 @@ for artifact in "${artifacts[@]}"; do
   target_dir="${local_repository}/${group_path}/${artifact_id}/${release_version}"
   target_base="${artifact_id}-${release_version}"
   mkdir -p "$target_dir"
+  mkdir -p "$artifact_id"
   cp "$source_file" "${target_dir}/${target_base}.aar"
   write_pom "${target_dir}/${target_base}.pom" "$artifact_id" "aar"
+  write_pom "${artifact_id}/pom.xml" "$artifact_id" "aar"
   printf 'Installed %s:%s:%s\n' "$repository_group" "$artifact_id" "$release_version"
 done
 
@@ -72,6 +74,14 @@ cat > pom.xml <<EOF
   <version>${release_version}</version>
   <packaging>pom</packaging>
   <name>AR SDK binary artifacts</name>
+  <modules>
+    <module>ypjar-lib</module>
+    <module>libyuv</module>
+    <module>bubbleseekbar</module>
+    <module>breakpad-build</module>
+    <module>android-gif-drawable</module>
+    <module>oaid-sdk</module>
+  </modules>
 </project>
 EOF
 

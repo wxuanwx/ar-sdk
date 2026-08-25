@@ -8,4 +8,12 @@
   <version>1.0.0</version>
   <packaging>pom</packaging>
   <name>AR SDK binary artifacts</name>
+  <modules>
+    <module>ypjar-lib</module>
+    <module>libyuv</module>
+    <module>bubbleseekbar</module>
+    <module>breakpad-build</module>
+    <module>android-gif-drawable</module>
+    <module>oaid-sdk</module>
+  </modules>
 </project>

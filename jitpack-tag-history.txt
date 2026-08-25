@@ -1,0 +1,10 @@
+# Never remove used JitPack tags from this file, even if Git tags are deleted.
+1.0.0-jitpack.1
+1.0.0-jitpack.2
+1.0.0-jitpack.3
+1.0.25-jitpack.1
+1.0.25-jitpack.2
+1.0.25-jitpack.3
+1.2.28-jitpack.1
+1.2.28-jitpack.2
+1.2.28-jitpack.3

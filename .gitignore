@@ -1,9 +1,6 @@
 *.aar
-!android-gif-drawable-1.2.28.aar
-!breakpad-build-release.aar
 !bubbleseekbar-release.aar
 !libyuv-debug.aar
-!oaid_sdk_1.0.25.aar
 ypjar-lib-release.aar
 !ypjar-lib-release.aar.part-*
 *.aar.md5

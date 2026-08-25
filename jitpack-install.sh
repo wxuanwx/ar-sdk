@@ -6,27 +6,41 @@ readonly repository_group="${root_group}.${ARTIFACT:-ar-sdk}"
 readonly repository_artifact="${ARTIFACT:-ar-sdk}"
 readonly release_version="${VERSION:-1.0.0}"
 readonly local_repository="${HOME}/.m2/repository"
-readonly ypjar_checksum="3b6232672368f76d1ebd7bc1d2af357c382c2c34fdb709c464a8719ea9e849a6"
+readonly artifact_config="artifacts.conf"
+readonly checksum_file="artifacts.sha256"
 
-ypjar_source="ypjar-lib-release.aar"
-if [[ ! -f "$ypjar_source" ]]; then
-  ypjar_source="$(mktemp /tmp/ypjar-lib-release.XXXXXX.aar)"
-  cat ypjar-lib-release.aar.part-* > "$ypjar_source"
-fi
+[[ -f "$artifact_config" ]] || { printf 'Missing %s\n' "$artifact_config" >&2; exit 1; }
+[[ -f "$checksum_file" ]] || { printf 'Missing %s\n' "$checksum_file" >&2; exit 1; }
 
-[[ "$(sha256sum "$ypjar_source" | cut -d' ' -f1)" == "$ypjar_checksum" ]] || {
-  printf 'Invalid ypjar-lib artifact checksum.\n' >&2
-  exit 1
+temp_dir="$(mktemp -d /tmp/ar-sdk-jitpack.XXXXXX)"
+cleanup() {
+  rm -rf "$temp_dir"
 }
+trap cleanup EXIT INT TERM
 
-readonly artifacts=(
-  "${ypjar_source}|ypjar-lib"
-  "libyuv-debug.aar|libyuv"
-  "bubbleseekbar-release.aar|bubbleseekbar"
-  "breakpad-build-release.aar|breakpad-build"
-  "android-gif-drawable-1.2.28.aar|android-gif-drawable"
-  "oaid_sdk_1.0.25.aar|oaid-sdk"
-)
+artifacts=()
+while IFS='|' read -r source_file artifact_id storage; do
+  [[ -n "$source_file" && "${source_file:0:1}" != "#" ]] || continue
+  resolved_source="$source_file"
+  if [[ ! -f "$resolved_source" && "$storage" == "split" ]]; then
+    resolved_source="${temp_dir}/${source_file}"
+    compgen -G "${source_file}.part-*" >/dev/null || {
+      printf 'Missing artifact and parts: %s\n' "$source_file" >&2
+      exit 1
+    }
+    cat "${source_file}.part-"* > "$resolved_source"
+  fi
+  [[ -f "$resolved_source" ]] || { printf 'Missing artifact: %s\n' "$source_file" >&2; exit 1; }
+
+  expected_checksum="$(awk -v file="$source_file" '$2 == file { print $1 }' "$checksum_file")"
+  [[ -n "$expected_checksum" ]] || { printf 'Missing checksum: %s\n' "$source_file" >&2; exit 1; }
+  actual_checksum="$(sha256sum "$resolved_source" | cut -d' ' -f1)"
+  [[ "$actual_checksum" == "$expected_checksum" ]] || {
+    printf 'Invalid checksum for %s\n' "$source_file" >&2
+    exit 1
+  }
+  artifacts+=("${resolved_source}|${artifact_id}")
+done < "$artifact_config"
 
 group_path="${repository_group//./\/}"
 root_group_path="${root_group//./\/}"
@@ -75,12 +89,14 @@ cat > pom.xml <<EOF
   <packaging>pom</packaging>
   <name>AR SDK binary artifacts</name>
   <modules>
-    <module>ypjar-lib</module>
-    <module>libyuv</module>
-    <module>bubbleseekbar</module>
-    <module>breakpad-build</module>
-    <module>android-gif-drawable</module>
-    <module>oaid-sdk</module>
+EOF
+
+for artifact in "${artifacts[@]}"; do
+  IFS='|' read -r source_file artifact_id <<< "$artifact"
+  printf '    <module>%s</module>\n' "$artifact_id" >> pom.xml
+done
+
+cat >> pom.xml <<'EOF'
   </modules>
 </project>
 EOF
@@ -118,4 +134,4 @@ cat >> "$aggregate_pom" <<'EOF'
 </project>
 EOF
 
-printf 'Installed aggregate %s:%s:%s\n' "$repository_group" "$repository_artifact" "$release_version"
+printf 'Installed aggregate %s:%s:%s\n' "$root_group" "$repository_artifact" "$release_version"

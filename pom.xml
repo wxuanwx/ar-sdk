@@ -12,8 +12,5 @@
     <module>ypjar-lib</module>
     <module>libyuv</module>
     <module>bubbleseekbar</module>
-    <module>breakpad-build</module>
-    <module>android-gif-drawable</module>
-    <module>oaid-sdk</module>
   </modules>
 </project>

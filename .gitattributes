@@ -1,0 +1,2 @@
+*.aar -text
+*.aar.part-* -text

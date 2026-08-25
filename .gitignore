@@ -1,0 +1,16 @@
+*.aar
+!android-gif-drawable-1.2.28.aar
+!breakpad-build-release.aar
+!bubbleseekbar-release.aar
+!libyuv-debug.aar
+!oaid_sdk_1.0.25.aar
+ypjar-lib-release.aar
+!ypjar-lib-release.aar.part-*
+*.aar.md5
+*.aar.sha1
+deploy-repsy*.sh
+REPSY_ARTIFACTS.md
+lib.5plus.base-release.aar
+obsensor_v2.0.6_2025041301_release.aar
+uniapp-v8-release.aar
+utsplugin-release.aar
